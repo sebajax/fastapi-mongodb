@@ -29,5 +29,3 @@ COPY ./app /code/app
 
 # copy logging config
 COPY ./logging.conf /code/logging.conf
-
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
