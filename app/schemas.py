@@ -1,7 +1,7 @@
 """
 pydantic schemas definition for user
 """
-
+from dataclasses import dataclass
 from enum import Enum
 
 from bson import ObjectId
@@ -63,3 +63,10 @@ class ResponseSchema(BaseModel):
     """class to represent the services exception to return to  presentation layer"""
     detail: str
     data: dict | None = None
+
+
+@dataclass
+class ServiceException(Exception):
+    """ class to represent the services exception to return to  presentation layer """
+    detail: str
+    status_code: int

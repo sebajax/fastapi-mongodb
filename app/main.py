@@ -2,7 +2,7 @@
 routing api
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.encoders import jsonable_encoder
 from starlette import status
 from starlette.responses import JSONResponse
@@ -10,7 +10,7 @@ from starlette.responses import JSONResponse
 from app.config import settings
 from app.item_repository import ItemRepository
 from app.mongo_config import Mongodb
-from app.schemas import ResponseSchema, ItemSchema
+from app.schemas import ResponseSchema, ItemSchema, ServiceException
 
 app = FastAPI()
 
@@ -34,12 +34,37 @@ async def health_check() -> JSONResponse:
     })
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/items/{item_id}", status_code=status.HTTP_200_OK, response_model=ResponseSchema)
+async def get_item(item_id: str):
+    """
+    finds a item in the database
+    :param item_id: to search
+    :type: str
+    :return: the item from the database
+    :rtype: ResponseSchema
+    """
+    try:
+        item: dict = await item_repository.get_item(item_id=item_id)
+        return ResponseSchema(detail="GET_ITEM_OK", data=item)
+    except ServiceException as service_exception:
+        raise HTTPException(
+            status_code=service_exception.status_code,
+            detail=service_exception.detail
+        )
 
 
-@app.post("/items", status_code=201, response_model=ResponseSchema)
+@app.get("/items", status_code=status.HTTP_200_OK, response_model=ResponseSchema)
+async def list_items() -> ResponseSchema:
+    """
+    lists all the items from the database
+    :return: a list with all the items
+    :rtype: ResponseSchema
+    """
+    items: list = await item_repository.list_items()
+    return ResponseSchema(detail="LIST_ALL_THE_ITEMS", data={"items": items})
+
+
+@app.post("/items", status_code=status.HTTP_201_CREATED, response_model=ResponseSchema)
 async def insert_item(item: ItemSchema) -> ResponseSchema:
     """
     creates a new item in the database
