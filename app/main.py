@@ -37,7 +37,7 @@ async def health_check() -> JSONResponse:
 @app.get("/items/{item_id}", status_code=status.HTTP_200_OK, response_model=ResponseSchema)
 async def get_item(item_id: str):
     """
-    finds a item in the database
+    finds an item in the database
     :param item_id: to search
     :type: str
     :return: the item from the database
